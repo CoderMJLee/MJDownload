@@ -18,6 +18,9 @@ static NSString *_totalFileSizesFile;
 /** 根文件夹 */
 static NSString * const MJDownloadRootDir = @"com_520it_www_mjdownload";
 
+/** 默认manager的标识 */
+static NSString * const MJDowndloadManagerDefaultIdentifier = @"com.520it.www.downloadmanager";
+
 /****************** MJDownloadInfo Begin ******************/
 @interface MJDownloadInfo()
 /******** Readonly Begin ********/
@@ -161,17 +164,20 @@ static NSString * const MJDownloadRootDir = @"com_520it_www_mjdownload";
 
 /****************** MJDownloadManager Begin ******************/
 @interface MJDownloadManager() <NSURLSessionDataDelegate>
-/** 回调的队列 */
-@property (strong, nonatomic) NSOperationQueue *queue;
 /** session */
 @property (strong, nonatomic) NSURLSession *session;
 /** 存放所有文件的下载信息 */
 @property (strong, nonatomic) NSMutableDictionary *downloadInfoDict;
 /** 存放所有文件的下载信息 */
 @property (strong, nonatomic) NSMutableArray *downloadInfoArray;
+/** 存放正在下载的文件的下载信息 */
+@property (strong, nonatomic) NSMutableArray *downloadingDownloadInfoArray;
 @end
 
 @implementation MJDownloadManager
+
+/** 存放所有的manager */
+static NSMutableDictionary *_managers;
 
 + (void)initialize
 {
@@ -181,12 +187,31 @@ static NSString * const MJDownloadRootDir = @"com_520it_www_mjdownload";
     if (_totalFileSizes == nil) {
         _totalFileSizes = [NSMutableDictionary dictionary];
     }
+    
+    _managers = [NSMutableDictionary dictionary];
 }
 
-#pragma mark - 初始化
-MJSingletonM(^{
++ (instancetype)defaultManager
+{
+    return [self managerWithIdentifier:MJDowndloadManagerDefaultIdentifier];
+}
+
++ (instancetype)manager
+{
+    return [[self alloc] init];
+}
+
++ (instancetype)managerWithIdentifier:(NSString *)identifier
+{
+    if (identifier == nil) return [self manager];
     
-});
+    MJDownloadManager *mgr = _managers[identifier];
+    if (!mgr) {
+        mgr = [self manager];
+        _managers[identifier] = mgr;
+    }
+    return mgr;
+}
 
 #pragma mark - 懒加载
 - (NSURLSession *)session
@@ -203,8 +228,8 @@ MJSingletonM(^{
 - (NSOperationQueue *)queue
 {
     if (!_queue) {
-        _queue = [[NSOperationQueue alloc] init];
-        _queue.maxConcurrentOperationCount = 3;
+        self.queue = [[NSOperationQueue alloc] init];
+        self.queue.maxConcurrentOperationCount = 1;
     }
     return _queue;
 }
@@ -225,7 +250,16 @@ MJSingletonM(^{
     return _downloadInfoArray;
 }
 
+- (NSMutableArray *)downloadingDownloadInfoArray
+{
+    if (!_downloadingDownloadInfoArray) {
+        self.downloadingDownloadInfoArray = [NSMutableArray array];
+    }
+    return _downloadingDownloadInfoArray;
+}
+
 #pragma mark - 私有方法
+
 /**
  *  清除资源
  */
@@ -233,13 +267,17 @@ MJSingletonM(^{
 {
     if (url == nil) return;
     
+    // 获得下载信息
+    MJDownloadInfo *info = [self downloadInfoForURL:url];
+    
     /** 移除下载信息 */
-    [self.downloadInfoArray removeObject:self.downloadInfoDict[url]];
+    [self.downloadInfoArray removeObject:info];
+    [self.downloadingDownloadInfoArray removeObject:info];
     [self.downloadInfoDict removeObjectForKey:url];
 }
 
 #pragma mark - 公共方法
-- (MJDownloadInfo *)download:(NSString *)url toDestinationPath:(NSString *)destinationPath queue:(NSOperationQueue *)queue progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion
+- (MJDownloadInfo *)download:(NSString *)url toDestinationPath:(NSString *)destinationPath progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion
 {
     if (url == nil) return nil;
     
@@ -272,9 +310,6 @@ MJSingletonM(^{
         return info;
     }
     
-    // 保存队列
-    self.queue = queue;
-    
     // 创建任务
     [info setupTask:self.session];
     
@@ -286,17 +321,7 @@ MJSingletonM(^{
 
 - (MJDownloadInfo *)download:(NSString *)url progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion
 {
-    return [self download:url toDestinationPath:nil queue:nil progress:progress completion:completion];
-}
-
-- (MJDownloadInfo *)download:(NSString *)url toDestinationPath:(NSString *)destinationPath progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion
-{
-    return [self download:url toDestinationPath:destinationPath queue:nil progress:progress completion:completion];
-}
-
-- (MJDownloadInfo *)download:(NSString *)url queue:(NSOperationQueue *)queue progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion
-{
-    return [self download:url toDestinationPath:nil queue:queue progress:progress completion:completion];
+    return [self download:url toDestinationPath:nil progress:progress completion:completion];
 }
 
 - (void)cancelAll
@@ -306,11 +331,21 @@ MJSingletonM(^{
     }];
 }
 
++ (void)cancelAll
+{
+    [_managers.allValues makeObjectsPerformSelector:@selector(cancelAll)];
+}
+
 - (void)suspendAll
 {
     [self.downloadInfoArray enumerateObjectsUsingBlock:^(MJDownloadInfo *info, NSUInteger idx, BOOL *stop) {
         [self suspend:info.url];
     }];
+}
+
++ (void)suspendAll
+{
+    [_managers.allValues makeObjectsPerformSelector:@selector(suspendAll)];
 }
 
 - (void)resumeAll
@@ -320,12 +355,18 @@ MJSingletonM(^{
     }];
 }
 
++ (void)resumeAll
+{
+    [_managers.allValues makeObjectsPerformSelector:@selector(resumeAll)];
+}
+
 - (void)cancel:(NSString *)url
 {
     if (url == nil) return;
     
     // 获得下载信息
-    MJDownloadInfo *info = self.downloadInfoDict[url];
+    MJDownloadInfo *info = [self downloadInfoForURL:url];
+    [self.downloadingDownloadInfoArray removeObject:info];
     
     // 取消
     [info.task cancel];
@@ -339,10 +380,13 @@ MJSingletonM(^{
     if (url == nil) return;
     
     // 获得下载信息
-    MJDownloadInfo *info = self.downloadInfoDict[url];
-    
+    MJDownloadInfo *info = [self downloadInfoForURL:url];
+    if (![self.downloadingDownloadInfoArray containsObject:info]) return;
+    [self.downloadingDownloadInfoArray removeObject:info];
     // 暂停
     [info.task suspend];
+    
+#warning 发通知
 }
 
 - (void)resume:(NSString *)url
@@ -350,10 +394,14 @@ MJSingletonM(^{
     if (url == nil) return;
     
     // 获得下载信息
-    MJDownloadInfo *info = self.downloadInfoDict[url];
-    
-    // 暂停
+    MJDownloadInfo *info = [self downloadInfoForURL:url];
+    // 正在下载
+    if ([self.downloadingDownloadInfoArray containsObject:info]) return;
+    [self.downloadingDownloadInfoArray addObject:info];
+    // 继续
     [info.task resume];
+    
+#warning 发通知
 }
 
 - (MJDownloadInfo *)downloadInfoForURL:(NSString *)url
@@ -412,7 +460,7 @@ MJSingletonM(^{
     }
     
     // 清除
-    [self free:task.taskDescription];
+    [self free:info.url];
 }
 @end
 /****************** MJDownloadManager End ******************/

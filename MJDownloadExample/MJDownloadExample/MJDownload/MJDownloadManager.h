@@ -7,7 +7,6 @@
 //  
 
 #import <Foundation/Foundation.h>
-#import "MJDownloadSingleton.h"
 
 @class MJDownloadInfo;
 
@@ -72,12 +71,21 @@ typedef void (^MJDownloadCompletionBlock)(NSString *file, NSError *error);
  *  - 获得文件下载操作
  */
 @interface MJDownloadManager : NSObject
-MJSingletonH
+/** 回调的队列 */
+@property (strong, nonatomic) NSOperationQueue *queue;
+
++ (instancetype)defaultManager;
++ (instancetype)manager;
++ (instancetype)managerWithIdentifier:(NSString *)identifier;
 
 /**
  *  全部文件取消下载(一旦被取消了，需要重新调用download方法)
  */
 - (void)cancelAll;
+/**
+ *  全部文件取消下载(一旦被取消了，需要重新调用download方法)
+ */
++ (void)cancelAll;
 
 /**
  *  取消下载某个文件(一旦被取消了，需要重新调用download方法)
@@ -88,6 +96,10 @@ MJSingletonH
  *  全部文件暂停下载
  */
 - (void)suspendAll;
+/**
+ *  全部文件暂停下载
+ */
++ (void)suspendAll;
 
 /**
  *  暂停下载某个文件
@@ -98,6 +110,10 @@ MJSingletonH
  * 全部文件开始\继续下载
  */
 - (void)resumeAll;
+/**
+ * 全部文件开始\继续下载
+ */
++ (void)resumeAll;
 
 /**
  *  开始\继续下载某个文件
@@ -125,18 +141,6 @@ MJSingletonH
 /**
  *  下载一个文件
  *
- *  @param url        文件的URL路径
- *  @param progress   下载进度的回调
- *  @param completion 下载完成的回调
- *  @param queue      回调的执行队列
- *
- *  @return YES代表文件已经下载完毕
- */
-- (MJDownloadInfo *)download:(NSString *)url queue:(NSOperationQueue *)queue progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion;
-
-/**
- *  下载一个文件
- *
  *  @param url              文件的URL路径
  *  @param destinationPath  文件的存放路径
  *  @param progress         下载进度的回调
@@ -145,18 +149,5 @@ MJSingletonH
  *  @return YES代表文件已经下载完毕
  */
 - (MJDownloadInfo *)download:(NSString *)url toDestinationPath:(NSString *)destinationPath progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion;
-
-/**
- *  下载一个文件
- *
- *  @param url              文件的URL路径
- *  @param destinationPath  文件的存放路径
- *  @param progress         下载进度的回调
- *  @param completion       下载完成的回调
- *  @param queue            回调的执行队列
- *
- *  @return YES代表文件已经下载完毕
- */
-- (MJDownloadInfo *)download:(NSString *)url toDestinationPath:(NSString *)destinationPath queue:(NSOperationQueue *)queue progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion;
 @end
 /****************** MJDownloadManager End ******************/

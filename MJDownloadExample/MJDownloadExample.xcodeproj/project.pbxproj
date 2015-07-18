@@ -35,7 +35,6 @@
 		2D306FA31B5A97250069910E /* MJDownloadConst.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MJDownloadConst.m; sourceTree = "<group>"; };
 		2D306FA41B5A97250069910E /* MJDownloadManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJDownloadManager.h; sourceTree = "<group>"; };
 		2D306FA51B5A97250069910E /* MJDownloadManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MJDownloadManager.m; sourceTree = "<group>"; };
-		2D306FA61B5A97250069910E /* MJDownloadSingleton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJDownloadSingleton.h; sourceTree = "<group>"; };
 		2D306FA71B5A97250069910E /* NSString+MJDownload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+MJDownload.h"; sourceTree = "<group>"; };
 		2D306FA81B5A97250069910E /* NSString+MJDownload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+MJDownload.m"; sourceTree = "<group>"; };
 		2D7109E31B56CE2E004F0C27 /* MJDownloadExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MJDownloadExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,7 +74,6 @@
 			isa = PBXGroup;
 			children = (
 				2D306FA11B5A97250069910E /* MJDownload.h */,
-				2D306FA61B5A97250069910E /* MJDownloadSingleton.h */,
 				2D306FA21B5A97250069910E /* MJDownloadConst.h */,
 				2D306FA31B5A97250069910E /* MJDownloadConst.m */,
 				2D306FA41B5A97250069910E /* MJDownloadManager.h */,
