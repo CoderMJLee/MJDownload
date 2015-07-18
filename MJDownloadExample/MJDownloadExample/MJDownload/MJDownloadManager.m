@@ -10,8 +10,35 @@
 #import "NSString+MJDownload.h"
 #import "MJDownloadConst.h"
 
+/** 存放所有的文件大小 */
+static NSMutableDictionary *_totalFileSizes;
+/** 存放所有的文件大小的文件路径 */
+static NSString *_totalFileSizesFile;
+
+/** 根文件夹 */
+static NSString * const MJDownloadRootDir = @"com_520it_www_mjdownload";
+
 /****************** MJDownloadInfo Begin ******************/
 @interface MJDownloadInfo()
+/******** Readonly Begin ********/
+/** 下载状态 */
+@property (assign, nonatomic) MJDownloadState state;
+/** 这次写入的数量 */
+@property (assign, nonatomic) int64_t bytesWritten;
+/** 已下载的数量 */
+@property (assign, nonatomic) int64_t totalBytesWritten;
+/** 文件的总大小 */
+@property (assign, nonatomic) int64_t totalBytesExpectedToWrite;
+/** 文件名 */
+@property (copy, nonatomic) NSString *filename;
+/** 文件路径 */
+@property (copy, nonatomic) NSString *file;
+/** 文件url */
+@property (copy, nonatomic) NSString *url;
+/** 下载的错误信息 */
+@property (strong, nonatomic) NSError *error;
+/******** Readonly End ********/
+
 /** 存放所有的进度回调 */
 @property (copy, nonatomic) MJDownloadProgressBlock progressBlock;
 /** 存放所有的完毕回调 */
@@ -23,359 +50,64 @@
 @end
 
 @implementation MJDownloadInfo
-
-@end
-/****************** MJDownloadInfo End ******************/
-
-
-/****************** MJDownloadManager Begin ******************/
-/** 根文件夹 */
-static NSString * const MJDownloadRootDir = @"com_520it_www_mjdownload";
-
-@interface MJDownloadManager() <NSURLSessionDataDelegate>
-/** session */
-@property (strong, nonatomic) NSURLSession *session;
-/** 存放所有的任务 */
-@property (strong, nonatomic) NSMutableDictionary *tasks;
-/** 存放所有的文件流 */
-@property (strong, nonatomic) NSMutableDictionary *streams;
-/** 存放所有的文件名 */
-@property (strong, nonatomic) NSMutableDictionary *filenames;
-/** 存放所有的文件路径 */
-@property (strong, nonatomic) NSMutableDictionary *files;
-/** 存放所有文件总大小的文件路径 */
-@property (copy, nonatomic) NSString *totalFileSizesFile;
-/** 存放所有文件总大小 */
-@property (strong, nonatomic) NSMutableDictionary *totalFileSizes;
-/** 存放所有的进度回调 */
-@property (strong, nonatomic) NSMutableDictionary *progressBlocks;
-/** 存放所有的完毕回调 */
-@property (strong, nonatomic) NSMutableDictionary *completionBlocks;
-@end
-
-@implementation MJDownloadManager
-
-#pragma mark - 初始化
-MJSingletonM(^{
-    
-});
-
-#pragma mark - 路径处理
-/**
- *  获得文件名
- */
-- (NSString *)filenameForURL:(NSString *)url
+- (NSString *)file
 {
-    if (url == nil) return nil;
-    
-    NSString *filename = self.filenames[url];
-    if (filename == nil) {
-        filename = url.MD5;
-        self.filenames[url] = filename;
+    if (_file == nil) {
+        _file = [[NSString stringWithFormat:@"%@/%@", MJDownloadRootDir, self.filename] prependCaches];
     }
     
-    return filename;
-}
-
-/**
- *  获得文件路径
- */
-- (NSString *)fileForURL:(NSString *)url
-{
-    if (url == nil) return nil;
-    
-    NSString *file = self.files[url];
-    if (file == nil) {
-        file = [[NSString stringWithFormat:@"%@/%@", MJDownloadRootDir, [self filenameForURL:url]] prependCaches];
-        self.files[url] = file;
-    }
-    
-    if (![[NSFileManager defaultManager] fileExistsAtPath:file]) {
-        NSString *dir = [file stringByDeletingLastPathComponent];
+    if (_file && ![[NSFileManager defaultManager] fileExistsAtPath:_file]) {
+        NSString *dir = [_file stringByDeletingLastPathComponent];
         [[NSFileManager defaultManager] createDirectoryAtPath:dir withIntermediateDirectories:YES attributes:nil error:nil];
     }
     
-    return file;
+    return _file;
 }
 
-/**
- *  获得存放文件总大小的文件路径
- */
-- (NSString *)totalFileSizesFile
+- (NSString *)filename
 {
-    if (_totalFileSizesFile == nil) {
-        _totalFileSizesFile = [[NSString stringWithFormat:@"%@/%@", MJDownloadRootDir, @"MJDownloadFileSizes.plist".MD5] prependCaches];
+    if (_filename == nil) {
+        _filename = self.url.MD5;
     }
-    return _totalFileSizesFile;
+    return _filename;
 }
 
-/**
- *  获得文件的总大小
- */
-- (NSInteger)totalFileSizeForURL:(NSString *)url
+- (NSOutputStream *)stream
 {
-    return [self.totalFileSizes[url] integerValue];
-}
-
-- (NSOutputStream *)streamForURL:(NSString *)url
-{
-    NSOutputStream *stream = self.streams[url];
-    if (stream == nil) {
-        stream = [NSOutputStream outputStreamToFileAtPath:[self fileForURL:url] append:YES];
-        self.streams[url] = stream;
+    if (_stream == nil) {
+        _stream = [NSOutputStream outputStreamToFileAtPath:self.file append:YES];
     }
-    return stream;
+    return _stream;
 }
 
-#pragma mark - 懒加载
-- (NSURLSession *)session
+- (int64_t)totalBytesWritten
 {
-    if (!_session) {
-        // 配置
-        NSURLSessionConfiguration *cfg = [NSURLSessionConfiguration defaultSessionConfiguration];
-        // 队列
-        NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-        queue.maxConcurrentOperationCount = 3;
-        // session
-        self.session = [NSURLSession sessionWithConfiguration:cfg delegate:self delegateQueue:queue];
+    if (!_totalBytesWritten) {
+        _totalBytesWritten = self.file.fileSize;
     }
-    return _session;
+    return _totalBytesWritten;
 }
 
-- (NSMutableDictionary *)tasks
+- (int64_t)totalBytesExpectedToWrite
 {
-    if (!_tasks) {
-        self.tasks = [NSMutableDictionary dictionary];
+    if (!_totalBytesExpectedToWrite) {
+        _totalBytesExpectedToWrite = [_totalFileSizes[self.url] integerValue];
     }
-    return _tasks;
+    return _totalBytesExpectedToWrite;
 }
 
-- (NSMutableDictionary *)streams
+- (MJDownloadState)state
 {
-    if (!_streams) {
-        self.streams = [NSMutableDictionary dictionary];
-    }
-    return _streams;
-}
-
-- (NSMutableDictionary *)filenames
-{
-    if (!_filenames) {
-        self.filenames = [NSMutableDictionary dictionary];
-    }
-    return _filenames;
-}
-
-- (NSMutableDictionary *)files
-{
-    if (!_files) {
-        self.files = [NSMutableDictionary dictionary];
-    }
-    return _files;
-}
-
-- (NSMutableDictionary *)totalFileSizes
-{
-    if (!_totalFileSizes) {
-        self.totalFileSizes = [NSMutableDictionary dictionaryWithContentsOfFile:self.totalFileSizesFile];
-        if (_totalFileSizes == nil) {
-            self.totalFileSizes = [NSMutableDictionary dictionary];
-        }
-    }
-    return _totalFileSizes;
-}
-
-- (NSMutableDictionary *)progressBlocks
-{
-    if (!_progressBlocks) {
-        self.progressBlocks = [NSMutableDictionary dictionary];
-    }
-    return _progressBlocks;
-}
-
-- (NSMutableDictionary *)completionBlocks
-{
-    if (!_completionBlocks) {
-        self.completionBlocks = [NSMutableDictionary dictionary];
-    }
-    return _completionBlocks;
-}
-
-#pragma mark - 私有方法
-/**
- *  清除资源
- */
-- (void)free:(NSString *)url
-{
-    if (url == nil) return;
-    
-    /** 存放所有的任务 */
-    [self.tasks removeObjectForKey:url];
-    
-    /** 存放所有的文件流 */
-    [self.streams removeObjectForKey:url];
-    
-    /** 存放所有的文件名 */
-    [self.filenames removeObjectForKey:url];
-    
-    /** 存放所有的文件路径 */
-    [self.files removeObjectForKey:url];
-    
-    /** 存放所有文件总大小 */
-    [self.totalFileSizes removeObjectForKey:url];
-    
-    /** 存放所有的进度回调 */
-    [self.progressBlocks removeObjectForKey:url];
-    
-    /** 存放所有的完毕回调 */
-    [self.completionBlocks removeObjectForKey:url];
-}
-
-/**
- *  通知进度改变
- */
-- (void)notifyProgressWithUrl:(NSString *)url bytesWritten:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite
-{
-    // block
-    MJDownloadProgressBlock block = self.progressBlocks[url];
-    !block ? : block(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
-}
-
-/**
- *  通知下载完毕
- */
-- (void)notifyCompletionWithUrl:(NSString *)url file:(NSString *)file error:(NSError *)error
-{
-    // block
-    MJDownloadCompletionBlock block = self.completionBlocks[url];
-    !block ? : block(file, error);
-}
-
-#pragma mark - 公共方法
-- (BOOL)download:(NSString *)url toDestinationPath:(NSString *)destinationPath progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion
-{
-    if (url == nil) return NO;
-    
-    // 设置文件路径
-    if (destinationPath) {
-        self.files[url] = destinationPath;
-        self.filenames[url] = [destinationPath lastPathComponent];
-    }
-    
-    // 更新block
-    if (progress) self.progressBlocks[url] = progress;
-    if (completion) self.completionBlocks[url] = completion;
-    
-    // 如果已经下载完毕
-    if ([self downloadStateForURL:url] == MJDownloadStateCompleted) {
-        // 完毕
-        [self notifyCompletionWithUrl:url file:[self fileForURL:url] error:nil];
-        
-        // 清理资源
-        [self free:url];
-        return YES;
-    }
-    
-    // 获得任务
-    NSURLSessionDataTask *task = self.tasks[url];
-    
-    // 如果没有，就创建任务，开始
-    if (task == nil) {
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
-        NSString *range = [NSString stringWithFormat:@"bytes=%zd-", [self fileForURL:url].fileSize];
-        [request setValue:range forHTTPHeaderField:@"Range"];
-        task = [self.session dataTaskWithRequest:request];
-        // 设置描述
-        task.taskDescription = url;
-        self.tasks[url] = task;
-    }
-    
-    // 开始任务
-    [self resume:url];
-    
-    return NO;
-}
-
-- (BOOL)download:(NSString *)url progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion
-{
-    return [self download:url toDestinationPath:nil progress:progress completion:completion];
-}
-
-- (void)cancelAll
-{
-    [self.tasks enumerateKeysAndObjectsUsingBlock:^(NSString *url, NSURLSessionDataTask *task, BOOL *stop) {
-        [self cancel:url];
-    }];
-}
-
-- (void)suspendAll
-{
-    [self.tasks enumerateKeysAndObjectsUsingBlock:^(NSString *url, NSURLSessionDataTask *task, BOOL *stop) {
-        [self suspend:url];
-    }];
-}
-
-- (void)resumeAll
-{
-    [self.tasks enumerateKeysAndObjectsUsingBlock:^(NSString *url, NSURLSessionDataTask *task, BOOL *stop) {
-        [self resume:url];
-    }];
-}
-
-- (void)cancel:(NSString *)url
-{
-    if (url == nil) return;
-    
-    // 获得任务
-    NSURLSessionDataTask *task = self.tasks[url];
-    
-    // 取消
-    [task cancel];
-    
-    // 清除操作
-    [self free:url];
-}
-
-- (void)suspend:(NSString *)url
-{
-    if (url == nil) return;
-    
-    // 获得任务
-    NSURLSessionDataTask *task = self.tasks[url];
-    
-    // 取消
-    [task suspend];
-}
-
-- (void)resume:(NSString *)url
-{
-    if (url == nil) return;
-    
-    // 获得任务
-    NSURLSessionDataTask *task = self.tasks[url];
-    
-    // 取消
-    [task resume];
-}
-
-- (MJDownloadState)downloadStateForURL:(NSString *)url
-{
-    if (url == nil) return MJDownloadStateNone;
-    
     // 如果是下载完毕
-    NSInteger fileSize = [self fileForURL:url].fileSize;
-    if (fileSize && fileSize == [self totalFileSizeForURL:url]) {
+    if (self.totalBytesExpectedToWrite && self.totalBytesWritten == self.totalBytesExpectedToWrite) {
         return MJDownloadStateCompleted;
     }
     
-    // 获得任务
-    NSURLSessionDataTask *task = self.tasks[url];
-    
     // 如果下载失败
-    if (task.error) return MJDownloadStateCanceled;
+    if (self.task.error) return MJDownloadStateCanceled;
     
     // 根据任务的状态
-    switch (task.state) {
+    switch (self.task.state) {
         case NSURLSessionTaskStateCanceling: // 取消
             return MJDownloadStateCanceled;
             
@@ -392,21 +124,261 @@ MJSingletonM(^{
     return MJDownloadStateNone;
 }
 
+/**
+ *  初始化任务
+ */
+- (void)setupTask:(NSURLSession *)session
+{
+    if (self.task) return;
+    
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:self.url]];
+    NSString *range = [NSString stringWithFormat:@"bytes=%zd-", self.totalBytesWritten];
+    [request setValue:range forHTTPHeaderField:@"Range"];
+    
+    self.task = [session dataTaskWithRequest:request];
+    // 设置描述
+    self.task.taskDescription = self.url;
+}
+
+/**
+ *  通知进度改变
+ */
+- (void)notifyProgress
+{
+    !self.progressBlock ? : self.progressBlock(self.bytesWritten, self.totalBytesWritten, self.totalBytesExpectedToWrite);
+}
+
+/**
+ *  通知下载完毕
+ */
+- (void)notifyCompletion
+{
+    !self.completionBlock ? : self.completionBlock(self.file, self.error);
+}
+@end
+/****************** MJDownloadInfo End ******************/
+
+
+/****************** MJDownloadManager Begin ******************/
+@interface MJDownloadManager() <NSURLSessionDataDelegate>
+/** 回调的队列 */
+@property (strong, nonatomic) NSOperationQueue *queue;
+/** session */
+@property (strong, nonatomic) NSURLSession *session;
+/** 存放所有文件的下载信息 */
+@property (strong, nonatomic) NSMutableDictionary *downloadInfoDict;
+/** 存放所有文件的下载信息 */
+@property (strong, nonatomic) NSMutableArray *downloadInfoArray;
+@end
+
+@implementation MJDownloadManager
+
++ (void)initialize
+{
+    _totalFileSizesFile = [[NSString stringWithFormat:@"%@/%@", MJDownloadRootDir, @"MJDownloadFileSizes.plist".MD5] prependCaches];
+    
+    _totalFileSizes = [NSMutableDictionary dictionaryWithContentsOfFile:_totalFileSizesFile];
+    if (_totalFileSizes == nil) {
+        _totalFileSizes = [NSMutableDictionary dictionary];
+    }
+}
+
+#pragma mark - 初始化
+MJSingletonM(^{
+    
+});
+
+#pragma mark - 懒加载
+- (NSURLSession *)session
+{
+    if (!_session) {
+        // 配置
+        NSURLSessionConfiguration *cfg = [NSURLSessionConfiguration defaultSessionConfiguration];
+        // session
+        self.session = [NSURLSession sessionWithConfiguration:cfg delegate:self delegateQueue:self.queue];
+    }
+    return _session;
+}
+
+- (NSOperationQueue *)queue
+{
+    if (!_queue) {
+        _queue = [[NSOperationQueue alloc] init];
+        _queue.maxConcurrentOperationCount = 3;
+    }
+    return _queue;
+}
+
+- (NSMutableDictionary *)downloadInfoDict
+{
+    if (!_downloadInfoDict) {
+        self.downloadInfoDict = [NSMutableDictionary dictionary];
+    }
+    return _downloadInfoDict;
+}
+
+- (NSMutableArray *)downloadInfoArray
+{
+    if (!_downloadInfoArray) {
+        self.downloadInfoArray = [NSMutableArray array];
+    }
+    return _downloadInfoArray;
+}
+
+#pragma mark - 私有方法
+/**
+ *  清除资源
+ */
+- (void)free:(NSString *)url
+{
+    if (url == nil) return;
+    
+    /** 移除下载信息 */
+    [self.downloadInfoArray removeObject:self.downloadInfoDict[url]];
+    [self.downloadInfoDict removeObjectForKey:url];
+}
+
+#pragma mark - 公共方法
+- (MJDownloadInfo *)download:(NSString *)url toDestinationPath:(NSString *)destinationPath queue:(NSOperationQueue *)queue progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion
+{
+    if (url == nil) return nil;
+    
+    // 下载信息
+    MJDownloadInfo *info = self.downloadInfoDict[url];
+    if (info == nil) {
+        info = [[MJDownloadInfo alloc] init];
+        info.url = url; // 设置url
+        self.downloadInfoDict[url] = info;
+        [self.downloadInfoArray addObject:info];
+    }
+    
+    // 设置block
+    info.progressBlock = progress;
+    info.completionBlock = completion;
+    
+    // 设置文件路径
+    if (destinationPath) {
+        info.file = destinationPath;
+        info.filename = [destinationPath lastPathComponent];
+    }
+    
+    // 如果已经下载完毕
+    if (info.state == MJDownloadStateCompleted) {
+        // 完毕
+        [info notifyCompletion];
+        
+        // 清理资源
+        [self free:url];
+        return info;
+    }
+    
+    // 保存队列
+    self.queue = queue;
+    
+    // 创建任务
+    [info setupTask:self.session];
+    
+    // 开始任务
+    [self resume:url];
+    
+    return info;
+}
+
+- (MJDownloadInfo *)download:(NSString *)url progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion
+{
+    return [self download:url toDestinationPath:nil queue:nil progress:progress completion:completion];
+}
+
+- (MJDownloadInfo *)download:(NSString *)url toDestinationPath:(NSString *)destinationPath progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion
+{
+    return [self download:url toDestinationPath:destinationPath queue:nil progress:progress completion:completion];
+}
+
+- (MJDownloadInfo *)download:(NSString *)url queue:(NSOperationQueue *)queue progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion
+{
+    return [self download:url toDestinationPath:nil queue:queue progress:progress completion:completion];
+}
+
+- (void)cancelAll
+{
+    [self.downloadInfoArray enumerateObjectsUsingBlock:^(MJDownloadInfo *info, NSUInteger idx, BOOL *stop) {
+        [self cancel:info.url];
+    }];
+}
+
+- (void)suspendAll
+{
+    [self.downloadInfoArray enumerateObjectsUsingBlock:^(MJDownloadInfo *info, NSUInteger idx, BOOL *stop) {
+        [self suspend:info.url];
+    }];
+}
+
+- (void)resumeAll
+{
+    [self.downloadInfoArray enumerateObjectsUsingBlock:^(MJDownloadInfo *info, NSUInteger idx, BOOL *stop) {
+        [self resume:info.url];
+    }];
+}
+
+- (void)cancel:(NSString *)url
+{
+    if (url == nil) return;
+    
+    // 获得下载信息
+    MJDownloadInfo *info = self.downloadInfoDict[url];
+    
+    // 取消
+    [info.task cancel];
+    
+    // 清除操作
+    [self free:url];
+}
+
+- (void)suspend:(NSString *)url
+{
+    if (url == nil) return;
+    
+    // 获得下载信息
+    MJDownloadInfo *info = self.downloadInfoDict[url];
+    
+    // 暂停
+    [info.task suspend];
+}
+
+- (void)resume:(NSString *)url
+{
+    if (url == nil) return;
+    
+    // 获得下载信息
+    MJDownloadInfo *info = self.downloadInfoDict[url];
+    
+    // 暂停
+    [info.task resume];
+}
+
+- (MJDownloadInfo *)downloadInfoForURL:(NSString *)url
+{
+    if (url == nil) return nil;
+    
+    return self.downloadInfoDict[url];
+}
+
 #pragma mark - <NSURLSessionDataDelegate>
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSHTTPURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler
 {
-    NSString *url = dataTask.taskDescription;
+    // 获得下载信息
+    MJDownloadInfo *info = self.downloadInfoDict[dataTask.taskDescription];
+    
     // 获得文件总长度
-    if (![self totalFileSizeForURL:url]) {
-        NSInteger totalLength = [response.allHeaderFields[@"Content-Length"] integerValue] + [self fileForURL:url].fileSize;
+    if (!info.totalBytesExpectedToWrite) {
+        info.totalBytesExpectedToWrite = [response.allHeaderFields[@"Content-Length"] integerValue] + info.totalBytesWritten;
         // 存储文件总长度
-        self.totalFileSizes[url] = @(totalLength);
-        [self.totalFileSizes writeToFile:self.totalFileSizesFile atomically:YES];
+        _totalFileSizes[info.url] = @(info.totalBytesExpectedToWrite);
+        [_totalFileSizes writeToFile:_totalFileSizesFile atomically:YES];
     }
     
-    
     // 打开流
-    [[self streamForURL:dataTask.taskDescription] open];
+    [info.stream open];
     
     // 继续
     completionHandler(NSURLSessionResponseAllow);
@@ -414,23 +386,29 @@ MJSingletonM(^{
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
 {
-    NSString *url = dataTask.taskDescription;
+    // 获得下载信息
+    MJDownloadInfo *info = self.downloadInfoDict[dataTask.taskDescription];
+    
     // 写数据
-    [[self streamForURL:url] write:data.bytes maxLength:data.length];
+    info.bytesWritten = data.length;
+    info.totalBytesWritten += data.length;
+    [info.stream write:data.bytes maxLength:data.length];
     
     // 通知
-    [self notifyProgressWithUrl:url bytesWritten:data.length totalBytesWritten:[self fileForURL:url].fileSize totalBytesExpectedToWrite:[self totalFileSizeForURL:url]];
+    [info notifyProgress];
 }
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error
 {
-    NSString *url = task.taskDescription;
+    // 获得下载信息
+    MJDownloadInfo *info = self.downloadInfoDict[task.taskDescription];
+    
     // 关闭流
-    [[self streamForURL:url] close];
+    [info.stream close];
     
     // 通知(如果下载完毕 或者 下载出错了)
-    if ([self downloadStateForURL:url] == MJDownloadStateCompleted || error) {
-        [self notifyCompletionWithUrl:url file:[self fileForURL:url] error:error];
+    if (info.state == MJDownloadStateCompleted || error) {
+        [info notifyCompletion];
     }
     
     // 清除

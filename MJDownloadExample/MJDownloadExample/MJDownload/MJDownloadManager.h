@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "MJDownloadSingleton.h"
 
+@class MJDownloadInfo;
+
 /****************** 数据类型 Begin ******************/
 /** 下载状态 */
 typedef NS_ENUM(NSInteger, MJDownloadState) {
@@ -26,7 +28,7 @@ typedef NS_ENUM(NSInteger, MJDownloadState) {
  *  @param totalBytesWritten         【目前总共】写入的数据量
  *  @param totalBytesExpectedToWrite 【最终需要】写入的数据量
  */
-typedef void (^MJDownloadProgressBlock)(int64_t bytesWritten, int64_t totalBytesWritten, int64_t totalBytesExpectedToWrite);
+typedef void (^MJDownloadProgressBlock)(NSInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite);
 
 /**
  *  下载完毕的Block回调
@@ -57,6 +59,8 @@ typedef void (^MJDownloadCompletionBlock)(NSString *file, NSError *error);
 @property (copy, nonatomic, readonly) NSString *file;
 /** 文件url */
 @property (copy, nonatomic, readonly) NSString *url;
+/** 下载的错误信息 */
+@property (strong, nonatomic, readonly) NSError *error;
 @end
 /****************** MJDownloadInfo End ******************/
 
@@ -101,11 +105,11 @@ MJSingletonH
 - (void)resume:(NSString *)url;
 
 /**
- *  获得某个文件的下载状态
+ *  获得某个文件的下载信息
  *
  *  @param url 文件的URL
  */
-- (MJDownloadState)downloadStateForURL:(NSString *)url;
+- (MJDownloadInfo *)downloadInfoForURL:(NSString *)url;
 
 /**
  *  下载一个文件
@@ -116,18 +120,43 @@ MJSingletonH
  *
  *  @return YES代表文件已经下载完毕
  */
-- (BOOL)download:(NSString *)url progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion;
+- (MJDownloadInfo *)download:(NSString *)url progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion;
 
 /**
  *  下载一个文件
  *
  *  @param url        文件的URL路径
- *  @param path       文件的存放路径
  *  @param progress   下载进度的回调
  *  @param completion 下载完成的回调
+ *  @param queue      回调的执行队列
  *
  *  @return YES代表文件已经下载完毕
  */
-- (BOOL)download:(NSString *)url toDestinationPath:(NSString *)destinationPath progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion;
+- (MJDownloadInfo *)download:(NSString *)url queue:(NSOperationQueue *)queue progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion;
+
+/**
+ *  下载一个文件
+ *
+ *  @param url              文件的URL路径
+ *  @param destinationPath  文件的存放路径
+ *  @param progress         下载进度的回调
+ *  @param completion       下载完成的回调
+ *
+ *  @return YES代表文件已经下载完毕
+ */
+- (MJDownloadInfo *)download:(NSString *)url toDestinationPath:(NSString *)destinationPath progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion;
+
+/**
+ *  下载一个文件
+ *
+ *  @param url              文件的URL路径
+ *  @param destinationPath  文件的存放路径
+ *  @param progress         下载进度的回调
+ *  @param completion       下载完成的回调
+ *  @param queue            回调的执行队列
+ *
+ *  @return YES代表文件已经下载完毕
+ */
+- (MJDownloadInfo *)download:(NSString *)url toDestinationPath:(NSString *)destinationPath queue:(NSOperationQueue *)queue progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion;
 @end
 /****************** MJDownloadManager End ******************/

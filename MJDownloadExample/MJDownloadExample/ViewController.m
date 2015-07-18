@@ -20,16 +20,24 @@ static NSString * const url = @"http://120.25.226.186:32812/resources/videos/min
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    [[MJDownloadManager sharedInstance] download:url progress:^(int64_t bytesWritten, int64_t totalBytesWritten, int64_t totalBytesExpectedToWrite) {
-        NSLog(@"%f", 1.0 * totalBytesWritten / totalBytesExpectedToWrite);
+    [[MJDownloadManager sharedInstance] download:url progress:^(NSInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite) {
+        NSLog(@"下载进度：%f", 1.0 * totalBytesWritten / totalBytesExpectedToWrite);
     } completion:^(NSString *file, NSError *error) {
-        NSLog(@"%@ %@", file, error);
+        NSLog(@"下载完毕。文件：%@ 错误：%@", file, error);
     }];
 }
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (IBAction)resume:(id)sender {
+    [[MJDownloadManager sharedInstance] resume:url];
+}
+
+- (IBAction)suspend:(id)sender {
+    [[MJDownloadManager sharedInstance] suspend:url];
+}
+
+- (IBAction)cancel:(id)sender {
     [[MJDownloadManager sharedInstance] cancel:url];
 }
+
 
 @end

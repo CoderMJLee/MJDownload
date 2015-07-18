@@ -75,11 +75,11 @@
 			isa = PBXGroup;
 			children = (
 				2D306FA11B5A97250069910E /* MJDownload.h */,
+				2D306FA61B5A97250069910E /* MJDownloadSingleton.h */,
 				2D306FA21B5A97250069910E /* MJDownloadConst.h */,
 				2D306FA31B5A97250069910E /* MJDownloadConst.m */,
 				2D306FA41B5A97250069910E /* MJDownloadManager.h */,
 				2D306FA51B5A97250069910E /* MJDownloadManager.m */,
-				2D306FA61B5A97250069910E /* MJDownloadSingleton.h */,
 				2D306FA71B5A97250069910E /* NSString+MJDownload.h */,
 				2D306FA81B5A97250069910E /* NSString+MJDownload.m */,
 			);
