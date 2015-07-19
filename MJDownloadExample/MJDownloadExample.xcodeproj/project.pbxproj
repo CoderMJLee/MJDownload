@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2D306FA91B5A97250069910E /* MJDownloadConst.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D306FA31B5A97250069910E /* MJDownloadConst.m */; };
-		2D306FAA1B5A97250069910E /* MJDownloadManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D306FA51B5A97250069910E /* MJDownloadManager.m */; };
-		2D306FAB1B5A97250069910E /* NSString+MJDownload.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D306FA81B5A97250069910E /* NSString+MJDownload.m */; };
 		2D49463B1B5B41F900291430 /* MJFileListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D49463A1B5B41F900291430 /* MJFileListViewController.m */; };
 		2D49463E1B5B428200291430 /* MJFileCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D49463D1B5B428200291430 /* MJFileCell.m */; };
 		2D7109E91B56CE2E004F0C27 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D7109E81B56CE2E004F0C27 /* main.m */; };
@@ -19,6 +16,9 @@
 		2D7109F71B56CE2E004F0C27 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2D7109F51B56CE2E004F0C27 /* LaunchScreen.xib */; };
 		2D710A031B56CE2E004F0C27 /* MJDownloadExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D710A021B56CE2E004F0C27 /* MJDownloadExampleTests.m */; };
 		2DDF319B1B5B6DBA0039C3B6 /* MJProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF319A1B5B6DBA0039C3B6 /* MJProgressView.m */; };
+		2DDF31AF1B5B90CD0039C3B6 /* MJDownloadConst.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF31AA1B5B90CD0039C3B6 /* MJDownloadConst.m */; };
+		2DDF31B01B5B90CD0039C3B6 /* MJDownloadManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF31AC1B5B90CD0039C3B6 /* MJDownloadManager.m */; };
+		2DDF31B11B5B90CD0039C3B6 /* NSString+MJDownload.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF31AE1B5B90CD0039C3B6 /* NSString+MJDownload.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,13 +32,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2D306FA11B5A97250069910E /* MJDownload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJDownload.h; sourceTree = "<group>"; };
-		2D306FA21B5A97250069910E /* MJDownloadConst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJDownloadConst.h; sourceTree = "<group>"; };
-		2D306FA31B5A97250069910E /* MJDownloadConst.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MJDownloadConst.m; sourceTree = "<group>"; };
-		2D306FA41B5A97250069910E /* MJDownloadManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJDownloadManager.h; sourceTree = "<group>"; };
-		2D306FA51B5A97250069910E /* MJDownloadManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MJDownloadManager.m; sourceTree = "<group>"; };
-		2D306FA71B5A97250069910E /* NSString+MJDownload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+MJDownload.h"; sourceTree = "<group>"; };
-		2D306FA81B5A97250069910E /* NSString+MJDownload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+MJDownload.m"; sourceTree = "<group>"; };
 		2D4946391B5B41F900291430 /* MJFileListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJFileListViewController.h; sourceTree = "<group>"; };
 		2D49463A1B5B41F900291430 /* MJFileListViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MJFileListViewController.m; sourceTree = "<group>"; };
 		2D49463C1B5B428200291430 /* MJFileCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJFileCell.h; sourceTree = "<group>"; };
@@ -56,6 +49,13 @@
 		2D710A021B56CE2E004F0C27 /* MJDownloadExampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MJDownloadExampleTests.m; sourceTree = "<group>"; };
 		2DDF31991B5B6DBA0039C3B6 /* MJProgressView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJProgressView.h; sourceTree = "<group>"; };
 		2DDF319A1B5B6DBA0039C3B6 /* MJProgressView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MJProgressView.m; sourceTree = "<group>"; };
+		2DDF31A81B5B90CD0039C3B6 /* MJDownload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJDownload.h; sourceTree = "<group>"; };
+		2DDF31A91B5B90CD0039C3B6 /* MJDownloadConst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJDownloadConst.h; sourceTree = "<group>"; };
+		2DDF31AA1B5B90CD0039C3B6 /* MJDownloadConst.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MJDownloadConst.m; sourceTree = "<group>"; };
+		2DDF31AB1B5B90CD0039C3B6 /* MJDownloadManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJDownloadManager.h; sourceTree = "<group>"; };
+		2DDF31AC1B5B90CD0039C3B6 /* MJDownloadManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MJDownloadManager.m; sourceTree = "<group>"; };
+		2DDF31AD1B5B90CD0039C3B6 /* NSString+MJDownload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+MJDownload.h"; sourceTree = "<group>"; };
+		2DDF31AE1B5B90CD0039C3B6 /* NSString+MJDownload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+MJDownload.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,20 +76,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		2D306FA01B5A97250069910E /* MJDownload */ = {
-			isa = PBXGroup;
-			children = (
-				2D306FA11B5A97250069910E /* MJDownload.h */,
-				2D306FA21B5A97250069910E /* MJDownloadConst.h */,
-				2D306FA31B5A97250069910E /* MJDownloadConst.m */,
-				2D306FA41B5A97250069910E /* MJDownloadManager.h */,
-				2D306FA51B5A97250069910E /* MJDownloadManager.m */,
-				2D306FA71B5A97250069910E /* NSString+MJDownload.h */,
-				2D306FA81B5A97250069910E /* NSString+MJDownload.m */,
-			);
-			path = MJDownload;
-			sourceTree = "<group>";
-		};
 		2D4946381B5B41D100291430 /* Example */ = {
 			isa = PBXGroup;
 			children = (
@@ -124,8 +110,8 @@
 		2D7109E51B56CE2E004F0C27 /* MJDownloadExample */ = {
 			isa = PBXGroup;
 			children = (
+				2DDF31A71B5B90CD0039C3B6 /* MJDownload */,
 				2D4946381B5B41D100291430 /* Example */,
-				2D306FA01B5A97250069910E /* MJDownload */,
 				2D7109EA1B56CE2E004F0C27 /* AppDelegate.h */,
 				2D7109EB1B56CE2E004F0C27 /* AppDelegate.m */,
 				2D7109E61B56CE2E004F0C27 /* Supporting Files */,
@@ -160,6 +146,21 @@
 				2D710A011B56CE2E004F0C27 /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		2DDF31A71B5B90CD0039C3B6 /* MJDownload */ = {
+			isa = PBXGroup;
+			children = (
+				2DDF31A81B5B90CD0039C3B6 /* MJDownload.h */,
+				2DDF31A91B5B90CD0039C3B6 /* MJDownloadConst.h */,
+				2DDF31AA1B5B90CD0039C3B6 /* MJDownloadConst.m */,
+				2DDF31AB1B5B90CD0039C3B6 /* MJDownloadManager.h */,
+				2DDF31AC1B5B90CD0039C3B6 /* MJDownloadManager.m */,
+				2DDF31AD1B5B90CD0039C3B6 /* NSString+MJDownload.h */,
+				2DDF31AE1B5B90CD0039C3B6 /* NSString+MJDownload.m */,
+			);
+			name = MJDownload;
+			path = ../../MJDownload;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -264,13 +265,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D7109EC1B56CE2E004F0C27 /* AppDelegate.m in Sources */,
-				2D306FA91B5A97250069910E /* MJDownloadConst.m in Sources */,
 				2DDF319B1B5B6DBA0039C3B6 /* MJProgressView.m in Sources */,
+				2DDF31B11B5B90CD0039C3B6 /* NSString+MJDownload.m in Sources */,
 				2D49463B1B5B41F900291430 /* MJFileListViewController.m in Sources */,
 				2D7109E91B56CE2E004F0C27 /* main.m in Sources */,
-				2D306FAB1B5A97250069910E /* NSString+MJDownload.m in Sources */,
+				2DDF31B01B5B90CD0039C3B6 /* MJDownloadManager.m in Sources */,
+				2DDF31AF1B5B90CD0039C3B6 /* MJDownloadConst.m in Sources */,
 				2D49463E1B5B428200291430 /* MJFileCell.m in Sources */,
-				2D306FAA1B5A97250069910E /* MJDownloadManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
