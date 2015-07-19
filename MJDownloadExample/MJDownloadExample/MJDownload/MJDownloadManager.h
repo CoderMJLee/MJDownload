@@ -13,11 +13,11 @@
 /****************** 数据类型 Begin ******************/
 /** 下载状态 */
 typedef NS_ENUM(NSInteger, MJDownloadState) {
-    MJDownloadStateNone    = 0,     // 闲置状态（除后面几种状态以外的其他状态）
-    MJDownloadStateResumed = 1,     // 下载中
-    MJDownloadStateSuspened  = 2,   // 暂停中
-    MJDownloadStateCanceled = 3,     // 已经被取消或者下载失败
-    MJDownloadStateCompleted = 4    // 已经完全下载完毕
+    MJDownloadStateNone = 0,     // 闲置状态（除后面几种状态以外的其他状态）
+    MJDownloadStateWillResume,   // 即将下载（等待下载）
+    MJDownloadStateResumed,      // 下载中
+    MJDownloadStateSuspened,     // 暂停中
+    MJDownloadStateCompleted     // 已经完全下载完毕
 } NS_ENUM_AVAILABLE_IOS(2_0);
 
 /**
