@@ -27,15 +27,15 @@ typedef NS_ENUM(NSInteger, MJDownloadState) {
  *  @param totalBytesWritten         【目前总共】写入的数据量
  *  @param totalBytesExpectedToWrite 【最终需要】写入的数据量
  */
-typedef void (^MJDownloadProgressBlock)(NSInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite);
+typedef void (^MJDownloadProgressChangeBlock)(NSInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite);
 
 /**
- *  下载完毕的Block回调
+ *  状态改变的Block回调
  *
  *  @param file 文件的下载路径
  *  @param error    失败的描述信息
  */
-typedef void (^MJDownloadCompletionBlock)(NSString *file, NSError *error);
+typedef void (^MJDownloadStateChangeBlock)(MJDownloadState state, NSString *file, NSError *error);
 /****************** 数据类型 End ******************/
 
 
@@ -47,11 +47,11 @@ typedef void (^MJDownloadCompletionBlock)(NSString *file, NSError *error);
 /** 下载状态 */
 @property (assign, nonatomic, readonly) MJDownloadState state;
 /** 这次写入的数量 */
-@property (assign, nonatomic, readonly) int64_t bytesWritten;
+@property (assign, nonatomic, readonly) NSInteger bytesWritten;
 /** 已下载的数量 */
-@property (assign, nonatomic, readonly) int64_t totalBytesWritten;
+@property (assign, nonatomic, readonly) NSInteger totalBytesWritten;
 /** 文件的总大小 */
-@property (assign, nonatomic, readonly) int64_t totalBytesExpectedToWrite;
+@property (assign, nonatomic, readonly) NSInteger totalBytesExpectedToWrite;
 /** 文件名 */
 @property (copy, nonatomic, readonly) NSString *filename;
 /** 文件路径 */
@@ -73,6 +73,8 @@ typedef void (^MJDownloadCompletionBlock)(NSString *file, NSError *error);
 @interface MJDownloadManager : NSObject
 /** 回调的队列 */
 @property (strong, nonatomic) NSOperationQueue *queue;
+/** 最大同时下载数 */
+@property (assign, nonatomic) int maxDownloadingCount;
 
 + (instancetype)defaultManager;
 + (instancetype)manager;
@@ -130,7 +132,7 @@ typedef void (^MJDownloadCompletionBlock)(NSString *file, NSError *error);
 /**
  *  下载一个文件
  *
- *  @param url        文件的URL路径
+ *  @param url  文件的URL路径
  *
  *  @return YES代表文件已经下载完毕
  */
@@ -139,23 +141,23 @@ typedef void (^MJDownloadCompletionBlock)(NSString *file, NSError *error);
 /**
  *  下载一个文件
  *
- *  @param url        文件的URL路径
- *  @param completion 下载完成的回调
+ *  @param url      文件的URL路径
+ *  @param state    状态改变的回调
  *
  *  @return YES代表文件已经下载完毕
  */
-- (MJDownloadInfo *)download:(NSString *)url completion:(MJDownloadCompletionBlock)completion;
+- (MJDownloadInfo *)download:(NSString *)url state:(MJDownloadStateChangeBlock)state;
 
 /**
  *  下载一个文件
  *
- *  @param url        文件的URL路径
- *  @param progress   下载进度的回调
- *  @param completion 下载完成的回调
+ *  @param url          文件的URL路径
+ *  @param progress     下载进度的回调
+ *  @param state        状态改变的回调
  *
  *  @return YES代表文件已经下载完毕
  */
-- (MJDownloadInfo *)download:(NSString *)url progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion;
+- (MJDownloadInfo *)download:(NSString *)url progress:(MJDownloadProgressChangeBlock)progress state:(MJDownloadStateChangeBlock)state;
 
 /**
  *  下载一个文件
@@ -163,10 +165,10 @@ typedef void (^MJDownloadCompletionBlock)(NSString *file, NSError *error);
  *  @param url              文件的URL路径
  *  @param destinationPath  文件的存放路径
  *  @param progress         下载进度的回调
- *  @param completion       下载完成的回调
+ *  @param state            状态改变的回调
  *
  *  @return YES代表文件已经下载完毕
  */
-- (MJDownloadInfo *)download:(NSString *)url toDestinationPath:(NSString *)destinationPath progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion;
+- (MJDownloadInfo *)download:(NSString *)url toDestinationPath:(NSString *)destinationPath progress:(MJDownloadProgressChangeBlock)progress state:(MJDownloadStateChangeBlock)state;
 @end
 /****************** MJDownloadManager End ******************/

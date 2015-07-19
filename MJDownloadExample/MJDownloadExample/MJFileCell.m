@@ -33,6 +33,12 @@
         self.openButton.hidden = NO;
         self.downloadButton.hidden = YES;
         self.progressView.hidden = YES;
+    } else if (info.state == MJDownloadStateWillResume) {
+        self.openButton.hidden = YES;
+        self.downloadButton.hidden = NO;
+        self.progressView.hidden = NO;
+        
+        [self.downloadButton setTitle:@"等待下载" forState:UIControlStateNormal];
     } else {
         self.openButton.hidden = YES;
         self.downloadButton.hidden = NO;
@@ -60,15 +66,14 @@
 - (IBAction)download:(UIButton *)sender {
     MJDownloadInfo *info = [[MJDownloadManager defaultManager] downloadInfoForURL:self.url];
     
-    if (info.state == MJDownloadStateResumed) {
+    if (info.state == MJDownloadStateResumed || info.state == MJDownloadStateWillResume) {
         [[MJDownloadManager defaultManager] suspend:info.url];
-        self.url = self.url;
     } else {
         [[MJDownloadManager defaultManager] download:self.url progress:^(NSInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 self.url = self.url;
             });
-        } completion:^(NSString *file, NSError *error) {
+        } state:^(MJDownloadState state, NSString *file, NSError *error) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 self.url = self.url;
             });
