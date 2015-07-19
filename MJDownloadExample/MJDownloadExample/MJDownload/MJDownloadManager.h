@@ -131,6 +131,25 @@ typedef void (^MJDownloadCompletionBlock)(NSString *file, NSError *error);
  *  下载一个文件
  *
  *  @param url        文件的URL路径
+ *
+ *  @return YES代表文件已经下载完毕
+ */
+- (MJDownloadInfo *)download:(NSString *)url;
+
+/**
+ *  下载一个文件
+ *
+ *  @param url        文件的URL路径
+ *  @param completion 下载完成的回调
+ *
+ *  @return YES代表文件已经下载完毕
+ */
+- (MJDownloadInfo *)download:(NSString *)url completion:(MJDownloadCompletionBlock)completion;
+
+/**
+ *  下载一个文件
+ *
+ *  @param url        文件的URL路径
  *  @param progress   下载进度的回调
  *  @param completion 下载完成的回调
  *

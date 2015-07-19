@@ -70,7 +70,12 @@ static NSString * const MJDowndloadManagerDefaultIdentifier = @"com.520it.www.do
 - (NSString *)filename
 {
     if (_filename == nil) {
-        _filename = self.url.MD5;
+        NSString *pathExtension = self.url.pathExtension;
+        if (pathExtension.length) {
+            _filename = [NSString stringWithFormat:@"%@.%@", self.url.MD5, pathExtension];
+        } else {
+            _filename = self.url.MD5;
+        }
     }
     return _filename;
 }
@@ -176,7 +181,7 @@ static NSString * const MJDowndloadManagerDefaultIdentifier = @"com.520it.www.do
  */
 - (void)cancel
 {
-    if (self.state == MJDownloadStateNone) return;
+    if (self.state == MJDownloadStateCompleted || self.state == MJDownloadStateNone) return;
     
     [self.task cancel];
     self.state = MJDownloadStateNone;
@@ -190,7 +195,7 @@ static NSString * const MJDowndloadManagerDefaultIdentifier = @"com.520it.www.do
  */
 - (void)resume
 {
-    if (self.state == MJDownloadStateResumed) return;
+    if (self.state == MJDownloadStateCompleted || self.state == MJDownloadStateResumed) return;
     
     [self.task resume];
     self.state = MJDownloadStateResumed;
@@ -204,7 +209,7 @@ static NSString * const MJDowndloadManagerDefaultIdentifier = @"com.520it.www.do
  */
 - (void)suspend
 {
-    if (self.state == MJDownloadStateSuspened) return;
+    if (self.state == MJDownloadStateCompleted || self.state == MJDownloadStateSuspened) return;
     
     [self.task suspend];
     self.state = MJDownloadStateSuspened;
@@ -226,6 +231,9 @@ static NSString * const MJDowndloadManagerDefaultIdentifier = @"com.520it.www.do
     
     // 打开流
     [self.stream open];
+    
+    // 清空错误
+    self.error = nil;
 }
 
 - (void)didReceiveData:(NSData *)data
@@ -243,6 +251,11 @@ static NSString * const MJDowndloadManagerDefaultIdentifier = @"com.520it.www.do
 {
     // 关闭流
     [self.stream close];
+    self.stream = nil;
+    self.task = nil;
+    
+    // 错误
+    self.error = error;
     
     // 通知(如果下载完毕 或者 下载出错了)
     if (self.state == MJDownloadStateCompleted || error) {
@@ -358,35 +371,13 @@ static NSRecursiveLock *_lock;
 
 #pragma mark - 私有方法
 
-/**
- *  清除资源
- */
-- (void)free:(NSString *)url
-{
-    if (url == nil) return;
-    
-    // 获得下载信息
-    MJDownloadInfo *info = [self downloadInfoForURL:url];
-    
-    /** 移除下载信息 */
-    [self.downloadInfoArray removeObject:info];
-    [self.downloadingDownloadInfoArray removeObject:info];
-    [self.downloadInfoDict removeObjectForKey:url];
-}
-
 #pragma mark - 公共方法
 - (MJDownloadInfo *)download:(NSString *)url toDestinationPath:(NSString *)destinationPath progress:(MJDownloadProgressBlock)progress completion:(MJDownloadCompletionBlock)completion
 {
     if (url == nil) return nil;
     
     // 下载信息
-    MJDownloadInfo *info = self.downloadInfoDict[url];
-    if (info == nil) {
-        info = [[MJDownloadInfo alloc] init];
-        info.url = url; // 设置url
-        self.downloadInfoDict[url] = info;
-        [self.downloadInfoArray addObject:info];
-    }
+    MJDownloadInfo *info = [self downloadInfoForURL:url];
     
     // 设置block
     info.progressBlock = progress;
@@ -402,9 +393,8 @@ static NSRecursiveLock *_lock;
     if (info.state == MJDownloadStateCompleted) {
         // 完毕
         [info notifyCompletion];
-        
-        // 清理资源
-        [self free:url];
+        return info;
+    } else if (info.state == MJDownloadStateResumed) {
         return info;
     }
     
@@ -422,6 +412,17 @@ static NSRecursiveLock *_lock;
     return [self download:url toDestinationPath:nil progress:progress completion:completion];
 }
 
+- (MJDownloadInfo *)download:(NSString *)url completion:(MJDownloadCompletionBlock)completion
+{
+    return [self download:url toDestinationPath:nil progress:nil completion:completion];
+}
+
+- (MJDownloadInfo *)download:(NSString *)url
+{
+    return [self download:url toDestinationPath:nil progress:nil completion:nil];
+}
+
+#pragma mark - 文件操作
 - (void)cancelAll
 {
     [self.downloadInfoArray enumerateObjectsUsingBlock:^(MJDownloadInfo *info, NSUInteger idx, BOOL *stop) {
@@ -468,9 +469,6 @@ static NSRecursiveLock *_lock;
     
     // 取消
     [info cancel];
-    
-    // 清除操作
-    [self free:url];
 }
 
 - (void)suspend:(NSString *)url
@@ -498,11 +496,19 @@ static NSRecursiveLock *_lock;
     [info resume];
 }
 
+#pragma mark - 获得下载信息
 - (MJDownloadInfo *)downloadInfoForURL:(NSString *)url
 {
     if (url == nil) return nil;
     
-    return self.downloadInfoDict[url];
+    MJDownloadInfo *info = self.downloadInfoDict[url];
+    if (info == nil) {
+        info = [[MJDownloadInfo alloc] init];
+        info.url = url; // 设置url
+        self.downloadInfoDict[url] = info;
+        [self.downloadInfoArray addObject:info];
+    }
+    return info;
 }
 
 #pragma mark - <NSURLSessionDataDelegate>
@@ -536,7 +542,7 @@ static NSRecursiveLock *_lock;
     [info didCompleteWithError:error];
     
     // 清除
-    [self free:info.url];
+    [self.downloadingDownloadInfoArray removeObject:info];
 }
 @end
 /****************** MJDownloadManager End ******************/

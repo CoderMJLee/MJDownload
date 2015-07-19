@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7703" systemVersion="14E36b" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="vXZ-lx-hvc">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7703" systemVersion="14E36b" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="6Rp-IA-mJ3">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6711"/>
     </dependencies>
@@ -49,6 +49,104 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="429" y="20"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="z32-16-0DS">
+            <objects>
+                <navigationController id="6Rp-IA-mJ3" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="7Pa-Up-BYh">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="2vH-Iw-wNd" kind="relationship" relationship="rootViewController" id="Lh0-bQ-3Y3"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="qgp-vh-0db" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-331" y="798"/>
+        </scene>
+        <!--文件列表-->
+        <scene sceneID="ZpM-A7-Ied">
+            <objects>
+                <tableViewController id="2vH-Iw-wNd" customClass="MJFileListViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="107" sectionHeaderHeight="22" sectionFooterHeight="22" id="p4N-FI-m2x">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <prototypes>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="file" rowHeight="107" id="N8C-WS-GrP" customClass="MJFileCell">
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="N8C-WS-GrP" id="9Nu-LT-eI2">
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="h7B-f9-z31">
+                                            <rect key="frame" x="500" y="38" width="60" height="30"/>
+                                            <state key="normal" title="开始下载">
+                                                <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                            </state>
+                                            <connections>
+                                                <action selector="download:" destination="N8C-WS-GrP" eventType="touchUpInside" id="tBe-jo-kQW"/>
+                                            </connections>
+                                        </button>
+                                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Gp8-TT-DCH">
+                                            <rect key="frame" x="500" y="38" width="60" height="30"/>
+                                            <state key="normal" title="打开文件">
+                                                <color key="titleColor" red="0.8862745098" green="0.1843137255" blue="0.16862745100000001" alpha="1" colorSpace="calibratedRGB"/>
+                                                <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                            </state>
+                                            <connections>
+                                                <action selector="download:" destination="N8C-WS-GrP" eventType="touchUpInside" id="Bs6-u6-hgm"/>
+                                                <action selector="open:" destination="N8C-WS-GrP" eventType="touchUpInside" id="HXR-FW-vKC"/>
+                                            </connections>
+                                        </button>
+                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cY2-tA-4qU" customClass="MJProgressView">
+                                            <rect key="frame" x="0.0" y="0.0" width="600" height="2"/>
+                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="2" id="zKo-S1-1yI"/>
+                                            </constraints>
+                                        </view>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="cY2-tA-4qU" firstAttribute="top" secondItem="9Nu-LT-eI2" secondAttribute="top" id="1eN-dP-3XJ"/>
+                                        <constraint firstAttribute="trailing" secondItem="h7B-f9-z31" secondAttribute="trailing" constant="40" id="7Cg-lq-i8X"/>
+                                        <constraint firstAttribute="centerY" secondItem="Gp8-TT-DCH" secondAttribute="centerY" id="Kz4-ym-LiL"/>
+                                        <constraint firstAttribute="trailing" secondItem="cY2-tA-4qU" secondAttribute="trailing" id="jci-Jf-Roy"/>
+                                        <constraint firstItem="cY2-tA-4qU" firstAttribute="leading" secondItem="9Nu-LT-eI2" secondAttribute="leading" id="kkX-pa-UkU"/>
+                                        <constraint firstAttribute="centerY" secondItem="h7B-f9-z31" secondAttribute="centerY" id="nkp-BP-Avg"/>
+                                        <constraint firstAttribute="trailing" secondItem="Gp8-TT-DCH" secondAttribute="trailing" constant="40" id="p47-tp-Gh1"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="downloadButton" destination="h7B-f9-z31" id="YbE-r8-l6h"/>
+                                    <outlet property="openButton" destination="Gp8-TT-DCH" id="SVA-F2-b12"/>
+                                    <outlet property="progressView" destination="cY2-tA-4qU" id="iA2-70-5sl"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="2vH-Iw-wNd" id="X2I-tR-fk7"/>
+                            <outlet property="delegate" destination="2vH-Iw-wNd" id="foG-rJ-Z3A"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="文件列表" id="iPk-ME-4jz">
+                        <barButtonItem key="leftBarButtonItem" title="全部暂停" id="JCI-C5-SM6">
+                            <connections>
+                                <action selector="suspendAll:" destination="2vH-Iw-wNd" id="kKV-xi-6mJ"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" title="全部继续" id="KZ2-nn-FXX">
+                            <connections>
+                                <action selector="resumeAll:" destination="2vH-Iw-wNd" id="vMM-ct-DHn"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="W91-Ck-5qb" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="350" y="798"/>
         </scene>
     </scenes>
 </document>
