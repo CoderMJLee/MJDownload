@@ -236,11 +236,15 @@ static NSString * const MJDowndloadManagerDefaultIdentifier = @"com.520it.www.do
 - (void)didReceiveData:(NSData *)data
 {
     // 写数据
-    [self.stream write:data.bytes maxLength:data.length];
-    self.bytesWritten = data.length;
+    NSInteger result = [self.stream write:data.bytes maxLength:data.length];
     
-    // 通知进度改变
-    [self notifyProgressChange];
+    if (result == -1) {
+        self.error = self.stream.streamError;
+        [self.task cancel]; // 取消请求
+    }else{
+        self.bytesWritten = data.length;
+        [self notifyProgressChange]; // 通知进度改变
+    }
 }
 
 - (void)didCompleteWithError:(NSError *)error
@@ -251,8 +255,8 @@ static NSString * const MJDowndloadManagerDefaultIdentifier = @"com.520it.www.do
     self.stream = nil;
     self.task = nil;
     
-    // 错误
-    self.error = error;
+    // 错误(避免nil的error覆盖掉之前设置的self.error)
+    self.error = error ? error : self.error;
     
     // 通知(如果下载完毕 或者 下载出错了)
     if (self.state == MJDownloadStateCompleted || error) {
