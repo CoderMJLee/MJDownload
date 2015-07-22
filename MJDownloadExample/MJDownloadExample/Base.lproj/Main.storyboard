@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7703" systemVersion="14E36b" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="6Rp-IA-mJ3">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7703" systemVersion="14F6a" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="6Rp-IA-mJ3">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6711"/>
     </dependencies>
@@ -82,8 +82,12 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="h7B-f9-z31">
-                                            <rect key="frame" x="500" y="38" width="60" height="30"/>
-                                            <state key="normal" title="开始下载">
+                                            <rect key="frame" x="496" y="21" width="64" height="64"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="64" id="O44-37-Dgn"/>
+                                                <constraint firstAttribute="width" constant="64" id="Zib-R9-M7c"/>
+                                            </constraints>
+                                            <state key="normal">
                                                 <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                             </state>
                                             <connections>
@@ -91,11 +95,12 @@
                                             </connections>
                                         </button>
                                         <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Gp8-TT-DCH">
-                                            <rect key="frame" x="500" y="38" width="60" height="30"/>
-                                            <state key="normal" title="打开文件">
-                                                <color key="titleColor" red="0.8862745098" green="0.1843137255" blue="0.16862745100000001" alpha="1" colorSpace="calibratedRGB"/>
-                                                <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                            </state>
+                                            <rect key="frame" x="496" y="21" width="64" height="64"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="64" id="LCY-c4-WAp"/>
+                                                <constraint firstAttribute="width" constant="64" id="k7u-d5-Ap4"/>
+                                            </constraints>
+                                            <state key="normal" backgroundImage="check"/>
                                             <connections>
                                                 <action selector="download:" destination="N8C-WS-GrP" eventType="touchUpInside" id="Bs6-u6-hgm"/>
                                                 <action selector="open:" destination="N8C-WS-GrP" eventType="touchUpInside" id="HXR-FW-vKC"/>
@@ -149,4 +154,7 @@
             <point key="canvasLocation" x="350" y="798"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="check" width="128" height="128"/>
+    </resources>
 </document>

@@ -38,7 +38,7 @@
         self.downloadButton.hidden = NO;
         self.progressView.hidden = NO;
         
-        [self.downloadButton setTitle:@"等待下载" forState:UIControlStateNormal];
+        [self.downloadButton setBackgroundImage:[UIImage imageNamed:@"clock"] forState:UIControlStateNormal];
     } else {
         self.openButton.hidden = YES;
         self.downloadButton.hidden = NO;
@@ -56,9 +56,9 @@
         }
         
         if (info.state == MJDownloadStateResumed) {
-            [self.downloadButton setTitle:@"暂停下载" forState:UIControlStateNormal];
+            [self.downloadButton setBackgroundImage:[UIImage imageNamed:@"pause"] forState:UIControlStateNormal];
         } else {
-            [self.downloadButton setTitle:@"开始下载" forState:UIControlStateNormal];
+            [self.downloadButton setBackgroundImage:[UIImage imageNamed:@"download"] forState:UIControlStateNormal];
         }
     }
 }
